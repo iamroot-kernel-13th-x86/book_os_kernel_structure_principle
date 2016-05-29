@@ -43,6 +43,6 @@ read:
 
 	    msgBack db '1', 0x67 ; define byte :  '' 문자 하나, "" 문자열, 문자, 배경색, 전경
 
-	    times 510-($-$$) db 0  ; 39page 참조  - > 이미지 검색
+	    times 510-($-$$) db 0  ; 39page 참조, 참고이미지(https://raw.githubusercontent.com/iamroot-kernel-13th-x86/book_os_kernel_structure_principle/master/resource/image/mbr_mem.png)
             dw 0AA55h        ; define word -> 0??h hex 표현법 0 없어도 됨.
 
