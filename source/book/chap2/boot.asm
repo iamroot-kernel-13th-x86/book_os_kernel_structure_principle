@@ -31,7 +31,8 @@ read:
             mov ch, 0           ; 0번째 Cylinder ; bios에 고정된 cylinder, sector size가 다름.... -> 제조사 firmware값? bios표준??? 
             mov cl, 2           ; 2번째 섹터부터 읽기 시작한다.  c: counter
             mov dh, 0           ; Head=0 ; 0 앞 1 뒤 - 플래터마다 2개의 헤드가 존재
-            mov dl, 0x80           ; Drive=0  A:드라이브 d: data
+;            mov dl, 0x80           ; Drive=0  A:드라이브 d: data
+            mov dl, 0x0           ; Drive=0  A:드라이브 d: data
             int 0x13            ; Read!
 				; int 0x13이 발생되면 ah -> al -ch cl dh dl
 				; hdd 구조  http://forensic-proof.com/archives/355
@@ -40,6 +41,7 @@ read:
 				; carry flag: ex) 1 + 1 -> carry 발생
 
  	    jmp 0x1000:0000     ; kernel.bin 이 위치한 곳으로 점프한다.
+				; jmp를 통해 cs에 0x1000이 저장됨
 
 	    msgBack db '1', 0x67 ; define byte :  '' 문자 하나, "" 문자열, 문자, 배경색, 전경
 

@@ -8,6 +8,9 @@ start:
 	mov ss,ax
 
 	lea esi, [msgKernel]	; 문자열이 있는 곳의 주소를 구함.
+				; lea - mov와 비슷하지만  c처럼 주소값을  & 
+ 				; mov 는 값
+				; lea 는 주소
 	mov ax, 0xB800
 	mov es, ax		; es 에 0xB800 을 넣는다.
 	mov edi, 0 		; 화면의 제일 처음 부분 부터 시작할 것이다.

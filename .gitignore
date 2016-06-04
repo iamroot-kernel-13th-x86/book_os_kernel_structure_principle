@@ -2,4 +2,6 @@
 *.img
 .DS_Store
 *.log
+*.txt
+*.swp
 

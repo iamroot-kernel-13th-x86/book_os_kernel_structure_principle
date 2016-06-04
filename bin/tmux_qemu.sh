@@ -36,8 +36,8 @@ LOGFILE="$LDIR/serial_$(date +%s).log"
 	echo
 ) >> "$LOGFILE"
 
-
-EMU_CMD="qemu-system-x86_64 -hda $VD file:$LOGFILE"
+#EMU_CMD="qemu-system-x86_64 -hda $VD file:$LOGFILE"
+EMU_CMD="qemu-system-x86_64 -hda $VD -kernel $BI -append 'root=\"/dev/hda\" ro console=ttyS0 no-kvmclock' -net nic,model=e1000 -net user,hostfwd=tcp::10022-:22 -m 128 -nographic -no-hpet -rtc clock=vm -s -enable-kvm -serial file:$LOGFILE"
 LOG_CMD="tail -f $LOGFILE"
 GDB_CMD="gdb"
 

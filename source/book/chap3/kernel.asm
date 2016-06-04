@@ -7,23 +7,27 @@ start:
 	xor ax,ax
 	mov ss,ax
 
-	cli
+	cli                      ; 인터럽트  disable, lgdt 변경을 위해
 
-	lgdt[gdtr]
+	lgdt[gdtr]               ; lgdt register, gdtr 주소값
+				 ; gtd 설정을 위한 명령어
+				; 교재 77p 참조 
 
-	mov eax, cr0
+	mov eax, cr0		
 	or eax, 0x00000001
-	mov cr0, eax
+	mov cr0, eax		; cr = control register 32bit로 변경 cr0 = 1
+				; 88p
 
-	jmp $+2
-	nop
-	nop
+	jmp $+2			;파이프 라인에 들어있는 real mode용 명령어를 제거하기 위함 88p 
+	nop			;nop: Pad out with NOP instructions. The only difference compared to the standard ALIGN macro is that NASM can still jump over a large padding area. The default jump threshold is 16.
 
-	db 0x66
-	db 0x67
-	db 0xEA	
-	dd PM_Start
-	dw SysCodeSelector
+	nop
+				; cpu 입장에서는 32bit지만 nasm은 16bit로 컴파일하기 때문에 이런 식으로 처리함.
+	db 0x66			 
+	db 0x67			; 0x66, 0x67 prefix - CPU 16bit-> 32bit
+	db 0xEA			; EA = jmp의16진수 값
+	dd PM_Start		; 
+	dw SysCodeSelector	;   PM_Start(??): SysCodeSelect(0x08):
 
 ;-------------------------------------------------------;
 ;**********여기부터 Protected Mode 입니다.**************;
@@ -33,18 +37,20 @@ start:
 
 PM_Start:
 	
-	mov bx, SysDataSelector
+	mov bx, SysDataSelector ; SysDataSelect = 0x08 
 	mov ds, bx
 	mov es, bx
 	mov fs, bx
 	mov gs, bx
 	mov ss, bx
 
-	xor eax, eax
-	mov ax, VideoSelector
-	mov es, ax
+	xor eax, eax		; 0 초기화-  mov 보다 빠를것으로 추정
+	mov ax, VideoSelector	; 0x18 
+	mov es, ax		
 	mov edi, 80*2*10+2*10
-	lea esi, [ds:msgPMode]
+	lea esi, [ds:msgPMode]	; msgPMode = We are in Protected Mode", 0
+				; ds - segment selector로 사용됨.
+				; 
 	call printf
 	
 	jmp $
@@ -94,16 +100,19 @@ gdt:
 	db 0			; 베이스어드레스 31~24 비트
 
 ; 코드 세그먼트 디스크립터
-SysCodeSelector	equ 0x08
+SysCodeSelector	equ 0x08        ; equ : define constraint -> http://www.nasm.us/doc/nasmdoc3.html
+				; SysCodeSelector = 0x08
         dw 0xFFFF               ; limit:0xFFFF
 	dw 0x0000		; base 0~15 bit
 	db 0x01			; base 16~23 bit
 	db 0x9A			; P:1, DPL:0, Code, non-conforming, readable
+				; P - paging과 관련 flag - 70p 중간 참조 
+				; DPL - kernel/user flag - 70p
         db 0xCF                 ; G:1, D:1, limit 16~19 bit:0xF
 	db 0x00			; base 24~32 bit
 
 ; 데이터 세그먼트 디스크립터
-SysDataSelector	equ 0x10
+SysDataSelector	equ 0x0f	; 10진수 16 index
         dw 0xFFFF               ; limit 0xFFFF
 	dw 0x0000		; base 0~15 bit
 	db 0x01			; base 16~23 bit
@@ -112,7 +121,7 @@ SysDataSelector	equ 0x10
 	db 0x00			; base 24~32 bit
 
 ; 비디오 세그먼트 디스크립터
-VideoSelector	equ 0x18
+VideoSelector	equ 0x18	; 10진수 24
         dw 0xFFFF               ; limit 0xFFFF
 	dw 0x8000		; base 0~15 bit
 	db 0x0B			; base 16~23 bit
