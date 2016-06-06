@@ -29,7 +29,8 @@ paint:
             mov ch, 0           ; 0번째 Cylinder
             mov cl, 2           ; 2번째 섹터부터 읽기 시작한다. 
             mov dh, 0           ; Head=0
-            mov dl, 0x80           ; Drive=0  A:드라이브
+;            mov dl, 0x80       ; HDD 0
+            mov dl, 0           ; Drive=0  A:드라이브
             int 0x13            ; Read!
 
             jc read             ; 에러가 나면, 다시 함. 

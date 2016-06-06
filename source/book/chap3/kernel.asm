@@ -112,7 +112,8 @@ SysCodeSelector	equ 0x08        ; equ : define constraint -> http://www.nasm.us/
 	db 0x00			; base 24~32 bit
 
 ; 데이터 세그먼트 디스크립터
-SysDataSelector	equ 0x0f	; 10진수 16 index
+;SysDataSelector	equ 0x0f	; 10진수 16 index
+SysDataSelector	equ 0x10	; 10진수 16 index
         dw 0xFFFF               ; limit 0xFFFF
 	dw 0x0000		; base 0~15 bit
 	db 0x01			; base 16~23 bit
