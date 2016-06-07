@@ -38,16 +38,19 @@ read:
 	    mov dx, 0x3F2	; 플로피 디스크 드라이브의
 				; 0x3F2 -> IO ports -  http://wiki.osdev.org/I/O_Ports
 	    xor al, al          ; 모터를 끈다.
-	    out dx, al		; I/O 장치를 제어 dx에 매핑된 IO장치에 0이면 stop, 1이면 run
+	    out dx, al		; output from register to port
+				; I/O 장치를 제어 dx에 매핑된 IO장치에 0이면 stop, 1이면 run
 
 	    cli 		; clear interrupt flag
 				; CPU가 인터럽트 차단
-				; (lgdt를 위해)
+				; (lgdt를 위해??)
+				; (lidt를 위해??)
 	    mov	al, 0xFF	; PIC에서 모든 인터럽트를 
 	    out	0xA1, al	; 막아 놓는다.
 				; 0xA1 PIC주소
 
-	    lgdt[gdtr]		; gdt table setting
+	    lgdt[gdtr]		; Load global descriptor table (GDT) register
+				; gdt table setting
 
             mov eax, cr0	 
 	    or eax, 0x00000001

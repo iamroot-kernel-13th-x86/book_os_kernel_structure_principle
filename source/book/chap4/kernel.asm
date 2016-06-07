@@ -18,7 +18,7 @@ PM_Start:
 	lea esi, [msgPMode]	; "We are in Protected Mode", 0
 	call printf		;
 
-	cld			; CLD CLears the Direction fla
+	cld			; cld: clear the direction flag 
 				; 주소를 복사할의 방향을 초기화
 				; 방향?
 	mov ax, SysDataSelector ;SysDataSelector =  0x8
@@ -31,15 +31,16 @@ PM_Start:
  loop_idt:			; 
 	lea esi, [idt_ignore]	
 	mov cx,8		; 디스크립터 하나는 8바이트이다.
-	rep movsb		; rep - repeat
-				; movesb - byte move 
+	rep movsb		; rep - Repeat while ECX not zero 
+				; movesb - Move byte string
 				; ecx를 사용
 				; movesb 사용시- edi esi 1 byte 증가 - cli와 관련
 				; 111p 참조
 	dec ax			; ax가 0이되면 loop end
 	jnz loop_idt
 
-	lidt [idtr]		; iterrupt descriptor table 등록 
+	lidt [idtr]		; Load interrupt descriptor table (IDT) register
+				; iterrupt descriptor table 등록 
 	
 	sti			; 인터럽트 차단 해제 
 	int 0x77		; 77번 인터럽트 발생

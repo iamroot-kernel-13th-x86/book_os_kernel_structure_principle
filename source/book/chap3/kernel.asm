@@ -87,6 +87,10 @@ msgPMode db "We are in Protected Mode", 0
 ;------------------------------------------;
 ;*********** GDT Table ********************;
 ;------------------------------------------;
+; descriptor table - Segment limit checking, Read-only and execute-only segment options, Four privilege levels
+;		- 24bit baseaddress -> 16M 이상 표현
+
+
 gdtr:
 	dw gdt_end - gdt - 1	; GDT의 limit
 	dd gdt+0x10000          ; GDT의 베이스 어드레스
