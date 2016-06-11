@@ -46,37 +46,66 @@ read:
 	    xor al, al          ; 모터를 끈다.
 	    out dx, al
 
-	    cli
+	    cli			; cpu단 인터럽트 
+; 마스터 PIC       ; out IO 전용
+					; IO port 20에 0x11 b00010001
+					; LTIM (https://books.google.co.kr/books?id=INrGtjM9VI0C&pg=PA210&lpg=PA210&dq=ltim+interrupt&source=bl&ots=AP0kW1Xkd3&sig=FW2Ir1r9N6fh8I1mzuCrk6q98z4&hl=ko&sa=X&ved=0ahUKEwjww6ietZ_NAhUGo5QKHeB-CBcQ6AEIHDAA#v=onepage&q=ltim%20interrupt&f=false)
+;IO 20 command port - 초기화 ICW1
 
-            mov	al, 0x11		; PIC의 초기화
-	    out	0x20, al		; 마스터 PIC
-	    dw	0x00eb, 0x00eb		; jmp $+2, jmp $+2
-	    out	0xA0, al		; 슬레이브 PIC
-	    dw	0x00eb, 0x00eb
+            mov	al, 0x11		; PIC의 초기화 (PIC: 0x0020-0x0021)
+					; PIC(http://wiki.osdev.org/PIC)
+	    out	0x20, al
+	    dw	0x00eb, 0x00eb		; jmp $+2, jmp $+2 
+					; eb(http://x86.renejeschke.de/html/file_module_x86_id_147.html)
+					; delay
+	    out	0xA0, al		; 슬레이브 PIC(0x00A0-0x00A1	The second PIC)
+	    dw	0x00eb, 0x00eb		; jmp $+2, jmp $+2 
 
+; IO 21 data port -   ICW2~4
 	    mov	al, 0x20		; 마스터 PIC 인터럽트 시작점
-	    out	0x21, al
+	    out	0x21, al		; ICW2
+
 	    dw	0x00eb, 0x00eb
+
+
 	    mov	al, 0x28		; 슬레이브 PIC 인터럽트 시작점
-   	    out	0xA1, al
+					; 0x28 b00101000	
+   	    out	0xA1, al		; slave ICW2		
 	    dw	0x00eb, 0x00eb
 
 	    mov	al, 0x04		; 마스터 PIC의 IRQ2번에 
 	    out	0x21, al		; 슬레이브 PIC이 연결되어 있다.
+					; ICW3
 	    dw	0x00eb, 0x00eb
 	    mov	al, 0x02		; 슬레이브 PIC이 마스터 PIC의
 	    out	0xA1, al		; IRQ2번에 연결되어 있다.
+					; slave ICW3
 	    dw	0x00eb, 0x00eb
 
 	    mov	al, 0x01		; 8086 모드를 사용한다.
-	    out	0x21, al
-	    dw	0x00eb, 0x00eb
-	    out	0xA1, al
+	    out	0x21, al		; ICW4
+					; 0010 0001
+					; AEOI 0 - 수동	
+					; 수동으로 하는 이유는 다른 인터럽트로인해 꼬임 방지용
+					; kernel2.asm out
+					; 0x20 al(0x20) - 인터럽트 차단 해제 
+					; AEOI - End of interrupt : 
+	    dw	0x00eb, 0x00eb	
+	    out	0xA1, al		; slave ICW4
 	    dw	0x00eb, 0x00eb
 
 	    mov	al, 0xFF		; 슬레이브 PIC의 모든 인터럽트를 
+					; IMR에 oxff b11111111 8개 bit마다 매핑되어있는 각각의 인터럽트를 차단
+					; PIC interrup registers: ISR, IRR, IMR
+					; ox20, A0 (ICW1, OCW2,3이 공유)
+					; ICW 0001xxxx
+					; OCW2 0010xxxx
+					; OCW3 0000xxxx
+					; ICW1의 값을 정의하면 다음부터는 ICW2~4세팅으로 인식
+					; ICW1이 안오면 OCW2,3이 온다고 기대함.
 	    out	0xA1, al		; 막아 둔다.
   	    dw	0x00eb, 0x00eb
+					; OCW값 세팅
 	    mov	al, 0xFB		; 마스터 PIC의 IRQ2번을 제외한
 	    out	0x21, al		; 모든 인터럽트를 막아 둔다.
 

@@ -145,10 +145,11 @@ isr_33_keyboard:
 	push ds
 	pushfd
 
-	in	al,0x60
+	in	al,0x60				; keyboard buffer 읽음
+						; in을해야 다음 키보드 인터럽트가 활성화 가능
 
-	mov	al,0x20
-	out	0x20,al
+	mov	al,0x20				;
+	out	0x20,al				; 
 		
 	mov ax, VideoSelector
 	mov es, ax

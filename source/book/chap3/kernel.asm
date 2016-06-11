@@ -96,6 +96,7 @@ gdtr:
 	dd gdt+0x10000          ; GDT의 베이스 어드레스
 
 gdt:
+				; NULL descriptor - 없으면 에러가 발생
 	dw 0			; limit 0~15 비트
 	dw 0			; 베이스어드레스의 하위 두 바이트
 	db 0			; 베이스어드레스 16~23 비트
@@ -103,16 +104,57 @@ gdt:
 	db 0			; limit 16~19 비트, 플래그
 	db 0			; 베이스어드레스 31~24 비트
 
+;0-15	00000000 00000000 		; limit
+;16-31	00000000 00000000		; base address
+;32-39	00000000			; base address
+
+;40-43	000 (or 0000)			; TYPE <- 그림3-6을 보면 4bit임. 교재가 좀 이상함.... 40 accessed bit가 안보임.
+;44	0				; S 
+;45-46	00				; DPL
+;47	0				; P
+
+;48-51	0000				; limit
+;52	0				; AVL
+;53	0				; 0
+;54	0				; D
+;55	0				; G
+
+;56-63	00000000			; base address
+				; 참고 http://wiki.osdev.org/GDT
+
+				; 참고 https://staktrace.com/nuggets/index.php?id=11&replyTo=0
+				;Bits 63-56: Bits 31-24 of the base address 
+				;Bit 55: Granularity bit (set means the limit gets multiplied by 4K) 
+				;Bit 54: 16/32-bit segment (0=16-bit, 1=32-bit) 
+				;Bit 53: Reserved, should be zero 
+				;Bit 52: Reserved for OS 
+				;Bits 51-48: Bits 19-16 of the segment limit 
+				;Bit 47: The segment is present in memory (used for virtual memory stuff) 
+				;Bits 46-45: Descriptor privilege level (0=highest, 3=lowest) 
+				;Bit 44: Descriptor bit (0=system descriptor, 1=code/data descriptor) 
+				;Bits 43-41: The descriptor type (see below for an enumeration of the types) 
+				;Bit 40: Accessed bit (again, for use with virtual memory) 
+				;Bits 39-16: Bits 23-0 of the base address 
+				;Bits 15-0: Bits 15-0 of the segment limit 
+
+
+				; type
+				; Bit 43: executable (0=data segment, 1=code segment) 
+				; Bit 42: expansion direction (for data segments), conforming (for code segments) 
+				; Bit 41: read/write (for data segments: 0=RO, 1=RW) (for code segments: 0=Execute only, 1=Read/execute)
+
 ; 코드 세그먼트 디스크립터
 SysCodeSelector	equ 0x08        ; equ : define constraint -> http://www.nasm.us/doc/nasmdoc3.html
 				; SysCodeSelector = 0x08
         dw 0xFFFF               ; limit:0xFFFF
 	dw 0x0000		; base 0~15 bit
 	db 0x01			; base 16~23 bit
-	db 0x9A			; P:1, DPL:0, Code, non-conforming, readable
+	db 0x9A			; 1001 1010
+				; P:1, DPL:0, Code, non-conforming, readable
 				; P - paging과 관련 flag - 70p 중간 참조 
 				; DPL - kernel/user flag - 70p
-        db 0xCF                 ; G:1, D:1, limit 16~19 bit:0xF
+        db 0xCF                 ; 1100 1111 
+				; G:1, D:1, limit 16~19 bit:0xF
 	db 0x00			; base 24~32 bit
 
 ; 데이터 세그먼트 디스크립터
@@ -121,7 +163,8 @@ SysDataSelector	equ 0x10	; 10진수 16 index
         dw 0xFFFF               ; limit 0xFFFF
 	dw 0x0000		; base 0~15 bit
 	db 0x01			; base 16~23 bit
-	db 0x92			; P:1, DPL:0, data, expand-up, writable
+	db 0x92			; 1001 0010
+				; P:1, DPL:0, data, expand-up, writable
         db 0xCF                 ; G:1, D:1, limit 16~19 bit:0xF
 	db 0x00			; base 24~32 bit
 

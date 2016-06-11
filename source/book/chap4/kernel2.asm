@@ -11,13 +11,14 @@ PM_Start:
 	mov fs, bx
 	mov gs, bx
 	mov ss, bx
-	lea esp, [PM_Start]
+	lea esp, [PM_Start] ; esp stack point 초기화 10000
 
 	mov edi, 0
 	lea esi, [msgPMode]
 	call printf
 
-	cld
+	cld			; up direction 
+				; rep movesb 동작시 방향 지정
 	mov ax, SysDataSelector
 	mov es, ax
 	xor eax, eax
@@ -28,20 +29,23 @@ PM_Start:
  loop_idt:
 	lea esi, [idt_ignore]	
 	mov cx,8		; 디스크립터 하나는 8바이트이다.
-	rep movsb
+	rep movsb		; movesb복사 rep 반복
+				; cx레지스터 값만큼 byte이동
 	dec ax
 	jnz loop_idt
 
-	mov edi, 8*0x20
+	mov edi, 8*0x20		; idt 8byte -  0x20 ; iterrupt number 32 = 0x20
 	lea esi, [idt_timer]
 	mov cx, 8
-	rep movsb
+	rep movsb		; movesb rep 8에서 1byte복사될때마다 -1 - 8회 수행
 
 	lidt [idtr]
 	
 	mov al, 0xFE            ; 막아두었던 인터럽트 중, 
-	out 0x21, al		; 타이머만 다시 유효하게 한다.
-	sti
+				; 1111 1110 - p126 참조 (timer)
+	out 0x21, al		; 타이머만 다시 유효하게 한다. - PIC 레벨
+				; 타이머는 자동으로 인터럽트 계속 발생
+	sti			; CPU 인터럽트 활성화
 
 	jmp $
 
@@ -103,7 +107,7 @@ isr_ignore:
 	pop fs
 	pop gs
 	
-	iret
+	iret			; 인터럽트 발생전 시점으로 복원
 
 isr_32_timer:
 	push gs
@@ -113,15 +117,17 @@ isr_32_timer:
 	pushad
 	pushfd
 
-	mov	al,0x20
-	out	0x20,al
+	mov	al,0x20 	; 0010 0000  -> IO 20번 port를 OCW2
+				;    0 0 -> (3,4 bit OCW2)
+				; 001   -> EOI( end of interrup )
+	out	0x20,al		; 
 
-	mov ax, VideoSelector
+	mov ax, VideoSelector	
 	mov es, ax
 	mov edi, (80*2*2)
 	lea esi, [msg_isr_32_timer]
 	call printf
-	inc byte [msg_isr_32_timer]
+	inc byte [msg_isr_32_timer]  ; inc => +1  
 	
 	popfd
 	popad
@@ -143,12 +149,12 @@ idt_ignore:
 	db 0
 	db 0x8E
 	dw 0x0001
-idt_timer:
-	dw isr_32_timer
-	dw 0x08
-	db 0
-	db 0x8E
-	dw 0x0001
+idt_timer:			; 109p 그림 4-1 참조
+	dw isr_32_timer		; 핸들러 하위 16bit 오프셋
+	dw 0x08			; code selector
+	db 0			; 
+	db 0x8E			; 1000 1110 P: 1 DPL: 00 D: 1
+	dw 0x0001		; 핸들러의 상위 16bit 오프셋
 
 times 512-($-$$) db 0
 

@@ -54,9 +54,10 @@ PM_Start:
 	sti
 
 	mov edx, 0
-	mov eax, 0x100
-	mov ebx, 0
-	div ebx
+	mov eax, 0x100		; dx 상위 16bit + ax 하위 16bit 
+	mov ebx, 0		; ebx 분모 = 0  -> Divide by zero 인터럽트 발생용
+	div ebx			; eax / ebx
+				; 참고 링크(http://www.tutorialspoint.com/assembly_programming/assembly_arithmetic_instructions.htm)
 
 	jmp $
 

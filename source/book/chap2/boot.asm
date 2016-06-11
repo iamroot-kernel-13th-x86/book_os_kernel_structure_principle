@@ -1,5 +1,11 @@
 [org 0]     ; org는 ip값으로 세팅<-
-            jmp 07C0h:start      ; 0x07c0:start -> 0x07c0:0x5 -> 0x07c05
+				; https://en.wikibooks.org/wiki/X86_Assembly/Machine_Language_Conversion
+            jmp 07C0h:start     ; 0x07c0:start -> 0x07c0:0x5 -> 0x07c05
+				; cs = 0x07c0, ip 0x05
+				; 00000000  EA0500C007        jmp 0x7c0:0x5
+				; ea 05 00 00 00 c0 07    jmp    0x7c0:0x5
+				; https://ko.wikipedia.org/wiki/JMP_(x86_%EB%AA%85%EB%A0%B9%EC%96%B4)
+
 
 start:
             
