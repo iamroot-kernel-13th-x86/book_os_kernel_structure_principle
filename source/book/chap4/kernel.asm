@@ -33,6 +33,7 @@ PM_Start:
 	mov cx,8		; 디스크립터 하나는 8바이트이다.
 	rep movsb		; rep - Repeat while ECX not zero 
 				; movesb - Move byte string
+				; movesb : byte 만큼 복사, rep : cx 값만큼 >    반복 ->  1byte복사될때마다 cx = cx - 1 =>  repeat movesb 8회
 				; ecx를 사용
 				; movesb 사용시- edi esi 1 byte 증가 - cli와 관련
 				; 111p 참조

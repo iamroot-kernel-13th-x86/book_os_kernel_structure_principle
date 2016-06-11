@@ -29,7 +29,9 @@ PM_Start:
  loop_idt:
 	lea esi, [idt_ignore]	
 	mov cx,8		; 디스크립터 하나는 8바이트이다.
-	rep movsb		; movesb복사 rep 반복
+	rep movsb		; movesb : byte 만큼 복사, rep : cx 값만큼 반복 ->  1byte복사될때마다 cx - 1 => 8회 수행
+
+
 				; cx레지스터 값만큼 byte이동
 	dec ax
 	jnz loop_idt
@@ -37,7 +39,7 @@ PM_Start:
 	mov edi, 8*0x20		; idt 8byte -  0x20 ; iterrupt number 32 = 0x20
 	lea esi, [idt_timer]
 	mov cx, 8
-	rep movsb		; movesb rep 8에서 1byte복사될때마다 -1 - 8회 수행
+	rep movsb		; movesb : byte 만큼 복사, rep : cx 값만큼 반복 ->  1byte복사될때마다 cx - 1 => 8회 수행
 
 	lidt [idtr]
 	
